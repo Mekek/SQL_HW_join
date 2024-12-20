@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS products_3 CASCADE;
+DROP TABLE IF EXISTS orders_2 CASCADE;
+
 CREATE TABLE products_3 (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(100),
@@ -9,36 +12,39 @@ CREATE TABLE orders_2 (
     order_id INT,
     product_id INT,
     order_ammount NUMERIC,
-    PRIMARY KEY (order_id, product_id),
+    unique_order_id SERIAL PRIMARY KEY,  
     FOREIGN KEY (product_id) REFERENCES products_3(product_id)
 );
 
+COPY products_3 (product_id, product_name, product_category) 
+FROM 'C:\\Code\\WB\\SQL_HW_2\\products_3.csv' DELIMITER ',' CSV HEADER;
 
-\COPY products_3 FROM 'path/to/products_3.csv' DELIMITER ',' CSV HEADER;
+COPY orders_2 (order_date, order_id, product_id, order_ammount)
+FROM 'C:\\Code\\WB\\SQL_HW_2\\orders_2.csv' DELIMITER ',' CSV HEADER;
 
-\COPY orders_2 FROM 'path/to/orders_2.csv' DELIMITER ',' CSV HEADER;
-
-
-
-SELECT 
-    category_product_sales.product_category,
-    category_product_sales.product_name,
-    MAX(category_product_sales.product_sales) AS max_sales
-FROM (
+WITH product_sales AS (
     SELECT 
         p.product_category,
         p.product_name,
-        SUM(o.order_ammount) AS product_sales
+        SUM(o.order_ammount) AS total_sales
     FROM 
-        orders_2 o
-    JOIN 
         products_3 p
-    ON 
-        o.product_id = p.product_id
+    JOIN 
+        orders_2 o ON p.product_id = o.product_id
     GROUP BY 
         p.product_category, p.product_name
-) category_product_sales
-GROUP BY 
-    category_product_sales.product_category, category_product_sales.product_name
-ORDER BY 
-    category_product_sales.product_category, max_sales DESC;
+)
+SELECT 
+    product_category,
+    product_name,
+    total_sales
+FROM (
+    SELECT 
+        product_category,
+        product_name,
+        total_sales,
+        ROW_NUMBER() OVER (PARTITION BY product_category ORDER BY total_sales DESC) AS rn
+    FROM product_sales
+) ranked_products
+WHERE rn = 1
+ORDER BY product_category;

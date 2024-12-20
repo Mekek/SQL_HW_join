@@ -1,9 +1,13 @@
-CREATE TABLE customers_new_3 (
+DROP TABLE IF EXISTS customers_new_3 CASCADE;
+
+DROP TABLE IF EXISTS orders_new_3 CASCADE;
+
+CREATE TABLE IF NOT EXISTS customers_new_3 (
     customer_id INT PRIMARY KEY,
     name VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE orders_new_3 (
+CREATE TABLE IF NOT EXISTS orders_new_3 (
     order_id INT PRIMARY KEY,
     customer_id INT,
     order_date TIMESTAMP NOT NULL,
@@ -13,10 +17,9 @@ CREATE TABLE orders_new_3 (
     FOREIGN KEY (customer_id) REFERENCES customers_new_3(customer_id)
 );
 
-\COPY customers_new_3 FROM 'path/to/customers_new_3.csv' DELIMITER ',' CSV HEADER;
+COPY customers_new_3 FROM 'C:\\Code\\WB\\SQL_HW_2\\customers_new_3.csv' DELIMITER ',' CSV HEADER;
 
-\COPY orders_new_3 FROM 'path/to/orders_new_3.csv' DELIMITER ',' CSV HEADER;
-
+COPY orders_new_3 FROM 'C:\\Code\\WB\\SQL_HW_2\\orders_new_3.csv' DELIMITER ',' CSV HEADER;
 
 SELECT 
     c.name AS customer_name,
